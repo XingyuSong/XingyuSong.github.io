@@ -20,17 +20,17 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="#使用Python requests+bs4+selenium爬取并下载知网文献 总体流程：高级检索—&gt;获取框架—&gt;get概览页链接—&gt;get文献链接（保存）—&gt;Webdriver打开链接—&gt;点击pdf按钮（保存，下载到本地）">
+  <meta name="description" content="使用Python requests+bs4+selenium爬取并下载知网文献总体流程：高级检索—&gt;获取框架—&gt;get概览页链接—&gt;get文献链接（保存）—&gt;Webdriver打开链接—&gt;点击pdf按钮（保存，下载到本地）">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Downloading literatures from CNKI through Python requests+bs4+selenium">
 <meta property="og:url" content="http://example.com/2021/02/03/Downloading-literatures-from-CNKI-through-Python-requests-bs4-selenium/index.html">
 <meta property="og:site_name" content="送信鱼">
-<meta property="og:description" content="#使用Python requests+bs4+selenium爬取并下载知网文献 总体流程：高级检索—&gt;获取框架—&gt;get概览页链接—&gt;get文献链接（保存）—&gt;Webdriver打开链接—&gt;点击pdf按钮（保存，下载到本地）">
+<meta property="og:description" content="使用Python requests+bs4+selenium爬取并下载知网文献总体流程：高级检索—&gt;获取框架—&gt;get概览页链接—&gt;get文献链接（保存）—&gt;Webdriver打开链接—&gt;点击pdf按钮（保存，下载到本地）">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://ftp.bmp.ovh/imgs/2021/02/348950d10de9453c.gif">
 <meta property="og:image" content="https://i.bmp.ovh/imgs/2021/02/6c9f1bfe781d357c.png">
 <meta property="article:published_time" content="2021-02-03T13:10:32.000Z">
-<meta property="article:modified_time" content="2021-02-03T13:15:21.279Z">
+<meta property="article:modified_time" content="2021-02-03T13:23:19.606Z">
 <meta property="article:author" content="Xingyu Song">
 <meta property="article:tag" content="Python">
 <meta name="twitter:card" content="summary">
@@ -193,7 +193,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2021-02-03 21:10:32 / Modified: 21:15:21" itemprop="dateCreated datePublished" datetime="2021-02-03T21:10:32+08:00">2021-02-03</time>
+              <time title="Created: 2021-02-03 21:10:32 / Modified: 21:23:19" itemprop="dateCreated datePublished" datetime="2021-02-03T21:10:32+08:00">2021-02-03</time>
             </span>
 
           
@@ -207,12 +207,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>#使用Python requests+bs4+selenium爬取并下载知网文献</p>
-<p>总体流程：高级检索—&gt;获取框架—&gt;get概览页链接—&gt;get文献链接（保存）—&gt;Webdriver打开链接—&gt;点击pdf按钮（保存，下载到本地）</p>
+        <h2 id="使用Python-requests-bs4-selenium爬取并下载知网文献"><a href="#使用Python-requests-bs4-selenium爬取并下载知网文献" class="headerlink" title="使用Python requests+bs4+selenium爬取并下载知网文献"></a>使用Python requests+bs4+selenium爬取并下载知网文献</h2><p>总体流程：高级检索—&gt;获取框架—&gt;get概览页链接—&gt;get文献链接（保存）—&gt;Webdriver打开链接—&gt;点击pdf按钮（保存，下载到本地）</p>
 <a id="more"></a>
 <p><img src="https://ftp.bmp.ovh/imgs/2021/02/348950d10de9453c.gif"></p>
-<p>##Step0 需要加载的packages</p>
-<pre><code>import requests
+<h2 id="Step0-需要加载的packages"><a href="#Step0-需要加载的packages" class="headerlink" title="Step0 需要加载的packages"></a>Step0 需要加载的packages</h2><pre><code>import requests
 import os
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -221,8 +219,7 @@ import time
 <h2 id="Step1-熟悉网页框架"><a href="#Step1-熟悉网页框架" class="headerlink" title="Step1 熟悉网页框架"></a>Step1 熟悉网页框架</h2><p>首先，从检索结果框架的源代码中获取概览页链接，发现我们可以通过修改curpage=i实现翻页。（获取网页链接时，翻页超过13~16时，要求输入验证码，尝试：自动识别输入验证码，先使用selenium截屏将图片保存到本地，定位获取验证码图片，使用pytesseract识别验证码；<br>通过图片二值化、降噪点提高识别的准确率但准确率仍旧很低、50%左右；在继续尝试提高准确率的过程中，发现每一次只获取十页链接（10*50）、分次获取 就不需要输入验证码了……于是就暂时没有再管了，每十页手动更换一次列表）</p>
 <p><img src="https://i.bmp.ovh/imgs/2021/02/6c9f1bfe781d357c.png"></p>
 <p>另外，由于链接地址的有效时长有限，会出现超时后会重定向到首页或是queryID检索框架过期（‘对不起，服务器上不存在此用户！可能已经被剔除或参数错误’），所以一次不能太贪心。</p>
-<p>##Step2 设置网络请求头</p>
-<p>由于网页Cookie会频繁进行更替，因此需要不时重新进行设置。</p>
+<h2 id="Step2-设置网络请求头"><a href="#Step2-设置网络请求头" class="headerlink" title="Step2 设置网络请求头"></a>Step2 设置网络请求头</h2><p>由于网页Cookie会频繁进行更替，因此需要不时重新进行设置。</p>
 <pre><code>HEADERS=&#123;
         &quot;Accept&quot;: &quot;text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8&quot;,
         &quot;Accept-Encoding&quot;: &quot;gzip, deflate&quot;,
@@ -237,8 +234,7 @@ import time
         &quot;User-Agent&quot;: &quot;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36&quot;
     &#125;
 </code></pre>
-<p>##Step3 获取文献链接列表</p>
-<p>调用beautifulSoup中的find_all方法获取链接，将获取到的文献列表写入txt，以供下一步下载时读取。</p>
+<h2 id="Step3-获取文献链接列表"><a href="#Step3-获取文献链接列表" class="headerlink" title=" Step3 获取文献链接列表"></a> Step3 获取文献链接列表</h2><p>调用beautifulSoup中的find_all方法获取链接，将获取到的文献列表写入txt，以供下一步下载时读取。</p>
 <pre><code>def get_page(url,i):
     fn = &quot;0509geturl.txt&quot;
     fw = open(fn, &#39;a&#39;)
@@ -297,8 +293,7 @@ import time
         print(i.encode(&#39;utf-8&#39;))
         fw.write(i.encode(&#39;utf-8&#39;)+&quot;\n&quot;)
 </code></pre>
-<p>##Step4 下载文献到本地</p>
-<p>驱动Chrome浏览器打开链接，点击“pdf下载”保存到本地<br>存在的阻碍：<br>（1） 下载速度<br>使用selenium使得下载速度很慢，曾经尝试使用多线程下载，然而会出现某个线程不够稳定、断网的现象，并且下载过快会出现重新登录的要求；现在采取的方式是多个脚本同时运行，并且在点击间隔中sleep的时间设置得更长（10s）,尽量避免因网络原因加载过慢而导致的下载失败，现在速度为10篇/1min，比多线程时慢下来一倍，但是方便出现警告时重新登录，也方便从中断处重新开始下载<br>（2） ip封禁<br>在下载了两千篇左右以后，会收到这样的提示</p>
+<h2 id="Step4-下载文献到本地"><a href="#Step4-下载文献到本地" class="headerlink" title="Step4 下载文献到本地"></a>Step4 下载文献到本地</h2><p>驱动Chrome浏览器打开链接，点击“pdf下载”保存到本地<br>存在的阻碍：<br>（1） 下载速度<br>使用selenium使得下载速度很慢，曾经尝试使用多线程下载，然而会出现某个线程不够稳定、断网的现象，并且下载过快会出现重新登录的要求；现在采取的方式是多个脚本同时运行，并且在点击间隔中sleep的时间设置得更长（10s）,尽量避免因网络原因加载过慢而导致的下载失败，现在速度为10篇/1min，比多线程时慢下来一倍，但是方便出现警告时重新登录，也方便从中断处重新开始下载<br>（2） ip封禁<br>在下载了两千篇左右以后，会收到这样的提示</p>
 <blockquote>
 <p>因非正常下载行为，今天您的IP已被系统禁止继续下载，请明天再试！<br>由于下载文献需要学校图书馆的账号，找来其他地方的代理ip之后无法登录vpn，更换vpn账号以后，内网和外网的ip都已经改变，但是ip仍旧遭到封禁。手动在浏览器中下载ok，但是在webdriver驱动的浏览器中下载则不行。</p>
 </blockquote>
@@ -325,8 +320,7 @@ import time
                 print &quot;download fail!!!&quot;
                 fw.write(url.encode(&#39;utf-8&#39;) + &quot;\n&quot;)
 </code></pre>
-<p>##At last</p>
-<pre><code>def main():
+<h2 id="At-last"><a href="#At-last" class="headerlink" title=" At last"></a> At last</h2><pre><code>def main():
     for i in range(61,81,1):
         url=&quot;http://kns.cnki.net/kns/brief/brief.aspx?curpage=&#123;&#125;&amp;RecordsPerPage=50&amp;QueryID=24&amp;ID=&amp;turnpage=1&amp;tpagemode=L&amp;dbPrefix=SCDB&amp;Fields=&amp;DisplayMode=listmode&amp;PageName=ASP.brief_result_aspx#J_ORDER&amp;&quot;.format(i)#实现翻页
         get_page(url,i)
@@ -337,8 +331,7 @@ import time
 if __name__ == &quot;__main__&quot;:
     main()
 </code></pre>
-<p>##总结</p>
-<p>2018年3月14日写了下面这样一篇短记,几经波折最后下载了一万多篇文献。但项目并没有继续下去，但我依旧想将它作为我在这里的第一篇博客,以资鼓励。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title=" 总结"></a> 总结</h2><p>2018年3月14日写了下面这样一篇短记,几经波折最后下载了一万多篇文献。但项目并没有继续下去，但我依旧想将它作为我在这里的第一篇博客,以资鼓励。</p>
 <blockquote>
 <p>开始这个项目已经快四个月<br>从最开始的干劲满满<br>到后来的一路阻力<br>越来越多的困惑<br>越来越多的消极情绪<br>不过认认真真思考其中细节时<br>确乎是有一点发发现心流的存在了！<br>I love working！！<br>现在仍然在数据收集阶段<br>我们必须得收集到尽量全面尽量权威得数据<br>这样才能作为我们研究的基础<br>这是一件苦差事<br>并不那么轻易<br>不过你因此才学会如何利用好互联网数据！</p>
 </blockquote>
@@ -415,7 +408,7 @@ if __name__ == &quot;__main__&quot;:
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Step1-%E7%86%9F%E6%82%89%E7%BD%91%E9%A1%B5%E6%A1%86%E6%9E%B6"><span class="nav-number">1.</span> <span class="nav-text">Step1 熟悉网页框架</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Python-requests-bs4-selenium%E7%88%AC%E5%8F%96%E5%B9%B6%E4%B8%8B%E8%BD%BD%E7%9F%A5%E7%BD%91%E6%96%87%E7%8C%AE"><span class="nav-number">1.</span> <span class="nav-text">使用Python requests+bs4+selenium爬取并下载知网文献</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Step0-%E9%9C%80%E8%A6%81%E5%8A%A0%E8%BD%BD%E7%9A%84packages"><span class="nav-number">2.</span> <span class="nav-text">Step0 需要加载的packages</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Step1-%E7%86%9F%E6%82%89%E7%BD%91%E9%A1%B5%E6%A1%86%E6%9E%B6"><span class="nav-number">3.</span> <span class="nav-text">Step1 熟悉网页框架</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Step2-%E8%AE%BE%E7%BD%AE%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82%E5%A4%B4"><span class="nav-number">4.</span> <span class="nav-text">Step2 设置网络请求头</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Step3-%E8%8E%B7%E5%8F%96%E6%96%87%E7%8C%AE%E9%93%BE%E6%8E%A5%E5%88%97%E8%A1%A8"><span class="nav-number">5.</span> <span class="nav-text"> Step3 获取文献链接列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Step4-%E4%B8%8B%E8%BD%BD%E6%96%87%E7%8C%AE%E5%88%B0%E6%9C%AC%E5%9C%B0"><span class="nav-number">6.</span> <span class="nav-text">Step4 下载文献到本地</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#At-last"><span class="nav-number">7.</span> <span class="nav-text"> At last</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text"> 总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
