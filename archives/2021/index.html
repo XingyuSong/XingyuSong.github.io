@@ -176,15 +176,15 @@
 
       <div class="post-meta">
         <time itemprop="dateCreated"
-              datetime="2021-02-03T20:27:05+08:00"
+              datetime="2021-02-03T21:10:32+08:00"
               content="2021-02-03">
           02-03
         </time>
       </div>
 
       <div class="post-title">
-          <a class="post-title-link" href="/2021/02/03/Download-literatures-from-CNKI-through-requests-bs4-selenium/" itemprop="url">
-            <span itemprop="name">Untitled</span>
+          <a class="post-title-link" href="/2021/02/03/Downloading-literatures-from-CNKI-through-Python-requests-bs4-selenium/" itemprop="url">
+            <span itemprop="name">Downloading literatures from CNKI through Python requests+bs4+selenium</span>
           </a>
       </div>
 
@@ -267,6 +267,10 @@
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
   </nav>
 </div>
 
@@ -314,6 +318,7 @@
   </div>
 
   
+  <script size="300" alpha="0.6" zIndex="-1" src="/lib/canvas-ribbon/canvas-ribbon.js"></script>
   <script src="/lib/anime.min.js"></script>
   <script src="/lib/velocity/velocity.min.js"></script>
   <script src="/lib/velocity/velocity.ui.min.js"></script>
@@ -343,6 +348,26 @@
 
 
 
+<script>
+document.querySelectorAll('.pdfobject-container').forEach(element => {
+  let url = element.dataset.target;
+  let pdfOpenParams = {
+    navpanes : 0,
+    toolbar  : 0,
+    statusbar: 0,
+    pagemode : 'thumbs',
+    view     : 'FitH'
+  };
+  let pdfOpenFragment = '#' + Object.entries(pdfOpenParams).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
+  let fullURL = `/lib/pdf/web/viewer.html?file=${encodeURIComponent(url)}${pdfOpenFragment}`;
+
+  if (NexT.utils.supportsPDFs()) {
+    element.innerHTML = `<embed class="pdfobject" src="${url + pdfOpenFragment}" type="application/pdf" style="height: ${element.dataset.height};">`;
+  } else {
+    element.innerHTML = `<iframe src="${fullURL}" style="height: ${element.dataset.height};" frameborder="0"></iframe>`;
+  }
+});
+</script>
 
 
 
