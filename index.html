@@ -67,22 +67,11 @@
 
   <div class="article-inner">
     
-    <header class="article-header">
-      
-
-<h2 itemprop="name">
-  <a class="article-title" href="/2021/02/03/Download-literatures-from-CNKI-through-requests-bs4-selenium/">Download literatures from CNKI through requests+bs4+selenium</a>
-</h2>
-
-
-
-    </header>
-    
 
     
     <div class="article-meta">
       <a href="/2021/02/03/Download-literatures-from-CNKI-through-requests-bs4-selenium/" class="article-date">
-  <time datetime="2021-02-03T07:41:56.000Z" itemprop="datePublished">2021-02-03</time>
+  <time datetime="2021-02-03T12:22:59.606Z" itemprop="datePublished">2021-02-03</time>
 </a>
       
     </div>
@@ -94,58 +83,126 @@
       
       
       
-      <p>##总体流程<br>高级检索—&gt;获取框架—&gt;get概览页链接—&gt;get文献链接（保存）—&gt;Webdriver打开链接—&gt;点击pdf按钮（保存，下载到本地）</p>
-<p>##主要代码<br>#需要加载的包<br>import requests<br>import os<br>from bs4 import BeautifulSoup<br>from selenium import webdriver<br>import time</p>
-<p>#设置网页请求头<br>HEADERS={<br>        “Accept”: “text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,<em>/</em>;q=0.8”,<br>        “Accept-Encoding”: “gzip, deflate”,<br>        “Accept-Language”: “zh-CN,zh;q=0.9”,<br>        “Cache-Control”: “no-cache”,<br>        “Connection”: “keep-alive”,<br>        “Cookie”: “Ecp_notFirstLogin=Iob0hp; UM_distinctid=161fbb14dc16d8-0fe704002eaed2-3b60450b-e1000-161fbb14dc28d2; cnkiUserKey=863e4b9d-dd18-606d-0242-1b941922c10d; Ecp_ClientId=5180306222203671801; amid=518fa494-75d3-454a-ab86-19cb5f24bd92; ASP.NET_SessionId=bxvp5guwiwzmshoyrgxojuuw; SID_kns=123118; SID_klogin=125142; SID_krsnew=125131; SID_kcms=124102; SID_knsdelivery=125122; RsPerPage=50; SID_kxreader_new=011122; CNZZDATA3258975=cnzz_eid%3D745562340-1520342518-http%253A%252F%252Fxueshu.baidu.com%252F%26ntime%3D1525697997; Ecp_lout=1; IsLogin=; Ecp_session=1; LID=WEEvREcwSlJHSldRa1Fhb09jSnZqRWhNWDVndGw0aFFyc3UxZjlEajZYMD0=$9A4hF_YAuvQ5obgVAqNKPCYcEjKensW4ggI8Fm4gTkoUKaID8j8gFw!!; _pk_ref=%5B%22%22%2C%22%22%2C1525921651%2C%22http%3A%2F%2F<a href="http://www.cnki.net%2F%22%5D">www.cnki.net%2F%22%5D</a>; _pk_id=dbca1575-aae3-4cd6-a876-e51871215fd5.1521100425.79.1525921651.1525921651.; _pk_ses=*; Ecp_LoginStuts=%7B%22IsAutoLogin%22%3Afalse%2C%22UserName%22%3A%22nj0232%22%2C%22ShowName%22%3A%22%25E8%258B%258F%25E5%25B7%259E%25E5%25A4%25A7%25E5%25AD%25A6%25E5%259B%25BE%25E4%25B9%25A6%25E9%25A6%2586%22%2C%22UserType%22%3A%22bk%22%2C%22r%22%3A%22Iob0hp%22%7D; c_m_LinID=LinID=WEEvREcwSlJHSldRa1Fhb09jSnZqRWhNWDVndGw0aFFyc3UxZjlEajZYMD0=$9A4hF_YAuvQ5obgVAqNKPCYcEjKensW4ggI8Fm4gTkoUKaID8j8gFw!!&amp;ot=05/10/2018 11:27:47; c_m_expire=2018-05-10 11:27:47”,<br>        “Host”: “kns.cnki.net”,<br>        “Pragma”: “no-cache”,<br>        “Referer”: “<a target="_blank" rel="noopener" href="http://kns.cnki.net/kns/brief/result.aspx?dbprefix=SCDB&quot;">http://kns.cnki.net/kns/brief/result.aspx?dbprefix=SCDB&quot;</a>,<br>        “Upgrade-Insecure-Requests”: “1”,<br>        “User-Agent”: “Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36”}</p>
-<p>#读取所有文献的链接并存入文档<br>def get_page(url,i):<br>    fn = “0509geturl.txt”<br>    fw = open(fn, ‘a’)<br>    #设置网页框架请求数据<br>    DATA = {<br>        “curpage”: i,<br>        “RecordsPerPage”: “50”,<br>        “QueryID”: “7”,<br>        “turnpage”: “1”,<br>        “tpagemode”: “L”,<br>        “dbPrefix”: “SCDB”,<br>        “DisplayMode”: “listmode”,<br>        “PageName”: “ASP.brief_result_aspx”,<br>        “ConfigFile”: “SCDB.xml”,<br>        “t”: “1525146679451”,<br>    }<br>    str1= “<a target="_blank" rel="noopener" href="http://kns.cnki.net&quot;/">http://kns.cnki.net&quot;</a><br>    str2 = “<a target="_blank" rel="noopener" href="http://kns.cnki.net&quot;/">http://kns.cnki.net&quot;</a></p>
-<pre><code>r = requests.post(url, data=DATA, headers=HEADERS)
-#
-bs = BeautifulSoup(r.text, &quot;lxml&quot;)
-sl = bs.find_all(&quot;a&quot;, attrs=&#123;&quot;class&quot;: &quot;fz14&quot;&#125;)
-print (&quot;第&#123;&#125;页&quot;.format(i))
-print(len(sl))
-url_info=[]
-for i in sl:
-    str1+=i[&quot;href&quot;]#str1为未进行重定向的文献链接
-    s = requests.session()
-    s.headers = HEADERS
-    html = s.get(str1, allow_redirects=False)
-    str2+=html.headers[&#39;Location&#39;]
-    #print(str2)
-    url_info.append(str2)
-    str1 = &quot;http://kns.cnki.net&quot;
-    str2 = &quot;http://kns.cnki.net&quot;
-for i in url_info:
-    print(i)
-    fw.write(i.encode(&#39;utf-8&#39;) + &quot;\n&quot;)
+      <p>#使用Python requests+bs4+selenium爬取并下载知网文献</p>
+<p>总体流程：高级检索—&gt;获取框架—&gt;get概览页链接—&gt;get文献链接（保存）—&gt;Webdriver打开链接—&gt;点击pdf按钮（保存，下载到本地）</p>
+<p><img src="https://ftp.bmp.ovh/imgs/2021/02/348950d10de9453c.gif"></p>
+<p>##Step0 需要加载的packages<br>    import requests<br>    import os<br>    from bs4 import BeautifulSoup<br>    from selenium import webdriver<br>    import time</p>
+<h2 id="Step1-熟悉网页框架"><a href="#Step1-熟悉网页框架" class="headerlink" title="Step1 熟悉网页框架"></a>Step1 熟悉网页框架</h2><p>首先，从检索结果框架的源代码中获取概览页链接，发现我们可以通过修改curpage=i实现翻页。（获取网页链接时，翻页超过13~16时，要求输入验证码，尝试：自动识别输入验证码，先使用selenium截屏将图片保存到本地，定位获取验证码图片，使用pytesseract识别验证码；<br>通过图片二值化、降噪点提高识别的准确率但准确率仍旧很低、50%左右；在继续尝试提高准确率的过程中，发现每一次只获取十页链接（10*50）、分次获取 就不需要输入验证码了……于是就暂时没有再管了，每十页手动更换一次列表）</p>
+<p><img src="https://i.bmp.ovh/imgs/2021/02/6c9f1bfe781d357c.png"></p>
+<p>另外，由于链接地址的有效时长有限，会出现超时后会重定向到首页或是queryID检索框架过期（‘对不起，服务器上不存在此用户！可能已经被剔除或参数错误’），所以一次不能太贪心。</p>
+<p>##Step2 设置网络请求头<br>由于网页Cookie会频繁进行更替，因此需要不时重新进行设置。</p>
+<pre><code>HEADERS=&#123;
+        &quot;Accept&quot;: &quot;text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8&quot;,
+        &quot;Accept-Encoding&quot;: &quot;gzip, deflate&quot;,
+        &quot;Accept-Language&quot;: &quot;zh-CN,zh;q=0.9&quot;,
+        &quot;Cache-Control&quot;: &quot;no-cache&quot;,
+        &quot;Connection&quot;: &quot;keep-alive&quot;,
+        &quot;Cookie&quot;: &quot;Ecp_notFirstLogin=Iob0hp; UM_distinctid=161fbb14dc16d8-0fe704002eaed2-3b60450b-e1000-161fbb14dc28d2; cnkiUserKey=863e4b9d-dd18-606d-0242-1b941922c10d; Ecp_ClientId=5180306222203671801; amid=518fa494-75d3-454a-ab86-19cb5f24bd92; ASP.NET_SessionId=bxvp5guwiwzmshoyrgxojuuw; SID_kns=123118; SID_klogin=125142; SID_krsnew=125131; SID_kcms=124102; SID_knsdelivery=125122; RsPerPage=50; SID_kxreader_new=011122; CNZZDATA3258975=cnzz_eid%3D745562340-1520342518-http%253A%252F%252Fxueshu.baidu.com%252F%26ntime%3D1525697997; Ecp_lout=1; IsLogin=; Ecp_session=1; LID=WEEvREcwSlJHSldRa1Fhb09jSnZqRWhNWDVndGw0aFFyc3UxZjlEajZYMD0=$9A4hF_YAuvQ5obgVAqNKPCYcEjKensW4ggI8Fm4gTkoUKaID8j8gFw!!; _pk_ref=%5B%22%22%2C%22%22%2C1525921651%2C%22http%3A%2F%2Fwww.cnki.net%2F%22%5D; _pk_id=dbca1575-aae3-4cd6-a876-e51871215fd5.1521100425.79.1525921651.1525921651.; _pk_ses=*; Ecp_LoginStuts=%7B%22IsAutoLogin%22%3Afalse%2C%22UserName%22%3A%22nj0232%22%2C%22ShowName%22%3A%22%25E8%258B%258F%25E5%25B7%259E%25E5%25A4%25A7%25E5%25AD%25A6%25E5%259B%25BE%25E4%25B9%25A6%25E9%25A6%2586%22%2C%22UserType%22%3A%22bk%22%2C%22r%22%3A%22Iob0hp%22%7D; c_m_LinID=LinID=WEEvREcwSlJHSldRa1Fhb09jSnZqRWhNWDVndGw0aFFyc3UxZjlEajZYMD0=$9A4hF_YAuvQ5obgVAqNKPCYcEjKensW4ggI8Fm4gTkoUKaID8j8gFw!!&amp;ot=05/10/2018 11:27:47; c_m_expire=2018-05-10 11:27:47&quot;,
+        &quot;Host&quot;: &quot;kns.cnki.net&quot;,
+        &quot;Pragma&quot;: &quot;no-cache&quot;,
+        &quot;Referer&quot;: &quot;http://kns.cnki.net/kns/brief/result.aspx?dbprefix=SCDB&quot;,
+        &quot;Upgrade-Insecure-Requests&quot;: &quot;1&quot;,
+        &quot;User-Agent&quot;: &quot;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36&quot;
+    &#125;
 </code></pre>
-<p>######输出每一篇文献的标题、单位和摘要<br>def get_info(str):<br>    fn = “cnki2.txt”<br>    fw = open(fn, ‘a’)<br>    title=[]<br>    info=[]<br>    res = requests.get(str,headers=HEADERS)<br>    soup = BeautifulSoup(res.text,”lxml”)<br>    title = soup.select(‘h2’)<br>    info.append(title[0].text)<br>    for i in soup.find_all(“div”,attrs={“class”:”orgn”}):<br>        info.append(i.text)<br>    for i in soup.find_all(“span”,attrs={“id”: “ChDivSummary”}):<br>        info.append(i.text)<br>    for i in info:<br>        print(i.encode(‘utf-8’))<br>        fw.write(i.encode(‘utf-8’)+”\n”)</p>
-<p>def download(url):</p>
-<pre><code>options = webdriver.ChromeOptions()
-options.add_argument(
-    &#39;user-agent=&quot;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36&quot;&#39;)
-browser = webdriver.Chrome(&#39;C:/Program Files/chromedriver.exe&#39;, chrome_options=options)
-browser.get(url)
-try:
-    browser.find_element_by_id(&#39;pdfDown&#39;).click()
-    print &quot;download success!!!&quot;
-    #browser.quit()
-except Exception as e:
+<p>##Step3 获取文献链接列表</p>
+<p>调用beautifulSoup中的find_all方法获取链接，将获取到的文献列表写入txt，以供下一步下载时读取。</p>
+<pre><code>def get_page(url,i):
+    fn = &quot;0509geturl.txt&quot;
+    fw = open(fn, &#39;a&#39;)
+    #设置网页框架请求数据
+    DATA = &#123;
+        &quot;curpage&quot;: i,
+        &quot;RecordsPerPage&quot;: &quot;50&quot;,
+        &quot;QueryID&quot;: &quot;7&quot;,
+        &quot;turnpage&quot;: &quot;1&quot;,
+        &quot;tpagemode&quot;: &quot;L&quot;,
+        &quot;dbPrefix&quot;: &quot;SCDB&quot;,
+        &quot;DisplayMode&quot;: &quot;listmode&quot;,
+        &quot;PageName&quot;: &quot;ASP.brief_result_aspx&quot;,
+        &quot;ConfigFile&quot;: &quot;SCDB.xml&quot;,
+        &quot;t&quot;: &quot;1525146679451&quot;,
+    &#125;
+    str1= &quot;http://kns.cnki.net&quot;
+    str2 = &quot;http://kns.cnki.net&quot;
+
+    r = requests.post(url, data=DATA, headers=HEADERS)
+    #
+    bs = BeautifulSoup(r.text, &quot;lxml&quot;)
+    sl = bs.find_all(&quot;a&quot;, attrs=&#123;&quot;class&quot;: &quot;fz14&quot;&#125;)
+    print (&quot;第&#123;&#125;页&quot;.format(i))
+    print(len(sl))
+    url_info=[]
+    for i in sl:
+        str1+=i[&quot;href&quot;]#str1为未进行重定向的文献链接
+        s = requests.session()
+        s.headers = HEADERS
+        html = s.get(str1, allow_redirects=False)
+        str2+=html.headers[&#39;Location&#39;]
+        #print(str2)
+        url_info.append(str2)
+        str1 = &quot;http://kns.cnki.net&quot;
+        str2 = &quot;http://kns.cnki.net&quot;
+    for i in url_info:
+        print(i)
+        fw.write(i.encode(&#39;utf-8&#39;) + &quot;\n&quot;)
+</code></pre>
+<p>输出每一篇文献的标题、单位和摘要:</p>
+<pre><code>def get_info(str):
+    fn = &quot;cnki2.txt&quot;
+    fw = open(fn, &#39;a&#39;)
+    title=[]
+    info=[]
+    res = requests.get(str,headers=HEADERS)
+    soup = BeautifulSoup(res.text,&quot;lxml&quot;)
+    title = soup.select(&#39;h2&#39;)
+    info.append(title[0].text)
+    for i in soup.find_all(&quot;div&quot;,attrs=&#123;&quot;class&quot;:&quot;orgn&quot;&#125;):
+        info.append(i.text)
+    for i in soup.find_all(&quot;span&quot;,attrs=&#123;&quot;id&quot;: &quot;ChDivSummary&quot;&#125;):
+        info.append(i.text)
+    for i in info:
+        print(i.encode(&#39;utf-8&#39;))
+        fw.write(i.encode(&#39;utf-8&#39;)+&quot;\n&quot;)
+</code></pre>
+<p>##Step4 下载文献到本地</p>
+<p>驱动Chrome浏览器打开链接，点击“pdf下载”保存到本地<br>存在的阻碍：<br>（1） 下载速度<br>使用selenium使得下载速度很慢，曾经尝试使用多线程下载，然而会出现某个线程不够稳定、断网的现象，并且下载过快会出现重新登录的要求；现在采取的方式是多个脚本同时运行，并且在点击间隔中sleep的时间设置得更长（10s）,尽量避免因网络原因加载过慢而导致的下载失败，现在速度为10篇/1min，比多线程时慢下来一倍，但是方便出现警告时重新登录，也方便从中断处重新开始下载<br>（2） ip封禁<br>在下载了两千篇左右以后，会收到这样的提示</p>
+<blockquote>
+<p>因非正常下载行为，今天您的IP已被系统禁止继续下载，请明天再试！<br>由于下载文献需要学校图书馆的账号，找来其他地方的代理ip之后无法登录vpn，更换vpn账号以后，内网和外网的ip都已经改变，但是ip仍旧遭到封禁。手动在浏览器中下载ok，但是在webdriver驱动的浏览器中下载则不行。</p>
+</blockquote>
+<pre><code>def download(url):
+
+    options = webdriver.ChromeOptions()
+    options.add_argument(
+        &#39;user-agent=&quot;Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36&quot;&#39;)
+    browser = webdriver.Chrome(&#39;C:/Program Files/chromedriver.exe&#39;, chrome_options=options)
+    browser.get(url)
     try:
-        browser.find_element_by_id(&#39;cajDown&#39;).click()#点击下载
+        browser.find_element_by_id(&#39;pdfDown&#39;).click()
         print &quot;download success!!!&quot;
+        #browser.quit()
     except Exception as e:
         try:
-            browser.find_element_by_id(&#39;DownLoadParts&#39;).click()
+            browser.find_element_by_id(&#39;cajDown&#39;).click()#点击下载
             print &quot;download success!!!&quot;
         except Exception as e:
-            print &quot;download fail!!!&quot;
-            fw.write(url.encode(&#39;utf-8&#39;) + &quot;\n&quot;)
+            try:
+                browser.find_element_by_id(&#39;DownLoadParts&#39;).click()
+                print &quot;download success!!!&quot;
+            except Exception as e:
+                print &quot;download fail!!!&quot;
+                fw.write(url.encode(&#39;utf-8&#39;) + &quot;\n&quot;)
 </code></pre>
-<p>def main():<br>    for i in range(61,81,1):<br>        url=”<a target="_blank" rel="noopener" href="http://kns.cnki.net/kns/brief/brief.aspx?curpage=%7B%7D&amp;RecordsPerPage=50&amp;QueryID=24&amp;ID=&amp;turnpage=1&amp;tpagemode=L&amp;dbPrefix=SCDB&amp;Fields=&amp;DisplayMode=listmode&amp;PageName=ASP.brief_result_aspx#J_ORDER&amp;&quot;.format(i)#%E5%AE%9E%E7%8E%B0%E7%BF%BB%E9%A1%B5">http://kns.cnki.net/kns/brief/brief.aspx?curpage={}&amp;RecordsPerPage=50&amp;QueryID=24&amp;ID=&amp;turnpage=1&amp;tpagemode=L&amp;dbPrefix=SCDB&amp;Fields=&amp;DisplayMode=listmode&amp;PageName=ASP.brief_result_aspx#J_ORDER&amp;&quot;.format(i)#实现翻页</a><br>        get_page(url,i)<br>        time.sleep(8)</p>
-<pre><code>print(&quot;finished!&quot;)
+<p>##At last<br>    def main():<br>        for i in range(61,81,1):<br>            url=”<a target="_blank" rel="noopener" href="http://kns.cnki.net/kns/brief/brief.aspx?curpage=%7B%7D&amp;RecordsPerPage=50&amp;QueryID=24&amp;ID=&amp;turnpage=1&amp;tpagemode=L&amp;dbPrefix=SCDB&amp;Fields=&amp;DisplayMode=listmode&amp;PageName=ASP.brief_result_aspx#J_ORDER&amp;&quot;.format(i)#%E5%AE%9E%E7%8E%B0%E7%BF%BB%E9%A1%B5">http://kns.cnki.net/kns/brief/brief.aspx?curpage={}&amp;RecordsPerPage=50&amp;QueryID=24&amp;ID=&amp;turnpage=1&amp;tpagemode=L&amp;dbPrefix=SCDB&amp;Fields=&amp;DisplayMode=listmode&amp;PageName=ASP.brief_result_aspx#J_ORDER&amp;&quot;.format(i)#实现翻页</a><br>            get_page(url,i)<br>            time.sleep(8)</p>
+<pre><code>    print(&quot;finished!&quot;)
+
+if __name__ == &quot;__main__&quot;:
+    main()
 </code></pre>
-<p>if <strong>name</strong> == “<strong>main</strong>“:<br>    main()</p>
+<p>##总结<br>2018年3月14日写了下面这样一篇短记,几经波折最后下载了一万多篇文献。但项目并没有继续下去，但我依旧想将它作为我在这里的第一篇博客,以资鼓励。</p>
+<blockquote>
+<p>开始这个项目已经快四个月<br>从最开始的干劲满满<br>到后来的一路阻力<br>越来越多的困惑<br>越来越多的消极情绪<br>不过认认真真思考其中细节时<br>确乎是有一点发发现心流的存在了！<br>I love working！！<br>现在仍然在数据收集阶段<br>我们必须得收集到尽量全面尽量权威得数据<br>这样才能作为我们研究的基础<br>这是一件苦差事<br>并不那么轻易<br>不过你因此才学会如何利用好互联网数据！</p>
+</blockquote>
 
       
     </div>
@@ -154,8 +211,6 @@ except Exception as e:
         Share
       </a>
       
-<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/" rel="tag">python</a></li></ul>
-
     </footer>
 
   </div>
@@ -198,10 +253,6 @@ except Exception as e:
   <aside class="sidebar">
     <button class="navbar-toggle"></button>
 <nav class="navbar">
-  
-  <div class="logo">
-    <a href="/"><img src="/images/hexo.svg" alt="送信鱼"></a>
-  </div>
   
   <ul class="nav nav-main">
     
